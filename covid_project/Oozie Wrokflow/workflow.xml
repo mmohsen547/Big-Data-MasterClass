@@ -1,0 +1,50 @@
+
+<workflow-app name="My_Workflow" xmlns="uri:oozie:workflow:0.5">
+    <start to="shell-43b2"/>
+    <kill name="Kill">
+        <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <action name="hive2-7bc3">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <jdbc-url>jdbc:hive2://quickstart.cloudera:10000/default</jdbc-url>
+            <script>/user/cloudera/input/CreateStaginTable.hql</script>
+        </hive2>
+        <ok to="hive2-4c31"/>
+        <error to="Kill"/>
+    </action>
+    <action name="hive2-4c31">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <jdbc-url>jdbc:hive2://quickstart.cloudera:10000/default</jdbc-url>
+            <script>/user/cloudera/input/CreateStaginTable.hql</script>
+        </hive2>
+        <ok to="hive2-1a8e"/>
+        <error to="End"/>
+    </action>
+    <action name="hive2-1a8e">
+        <hive2 xmlns="uri:oozie:hive2-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <jdbc-url>jdbc:hive2://quickstart.cloudera:10000/default</jdbc-url>
+            <script>/user/cloudera/FillPartitiondcTables.hql</script>
+        </hive2>
+        <ok to="End"/>
+        <error to="End"/>
+    </action>
+    <action name="shell-43b2">
+        <shell xmlns="uri:oozie:shell-action:0.1">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <exec>/user/cloudera/input/Load_COVID_TO_HDFS.sh</exec>
+              <argument></argument>
+            <file>/user/cloudera/input/Load_COVID_TO_HDFS.sh#Load_COVID_TO_HDFS.sh</file>
+              <capture-output/>
+        </shell>
+        <ok to="hive2-7bc3"/>
+        <error to="End"/>
+    </action>
+    <end name="End"/>
+</workflow-app>
